@@ -186,7 +186,8 @@ if [ -f "$PAM_CONFIG" ]; then
 fi
 
 # Check if our line already exists
-PAM_LINE="session optional pam_exec.so seteuid ${INSTALL_DIR}/${SCRIPT_NAME}"
+# Use type=open_session to only trigger on login, not on logout
+PAM_LINE="session optional pam_exec.so type=open_session seteuid ${INSTALL_DIR}/${SCRIPT_NAME}"
 
 if grep -q "ssh-login-notify.sh" "$PAM_CONFIG" 2>/dev/null; then
     echo -e "${YELLOW}!${NC} PAM configuration already exists"
