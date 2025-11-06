@@ -54,49 +54,26 @@ if command -v curl &> /dev/null && [ "$LOGIN_IP" != "Unknown" ] && [ "$LOGIN_IP"
     fi
 fi
 
-# Construct the message with enhanced formatting
+# Construct the message with enhanced header
 MESSAGE="🚨 *SSH LOGIN DETECTED* 🚨
 ━━━━━━━━━━━━━━━━━━━━
 
-🖥 *SERVER INFO*
-\`\`\`
-${DISPLAY_SERVER}
-\`\`\`
-
-👤 *USER*
-\`\`\`
-${LOGIN_USER}
-\`\`\`
-
-🌐 *IP ADDRESS*
-\`\`\`
-${LOGIN_IP}
-\`\`\`"
+*Server:* \`${DISPLAY_SERVER}\`
+*User:* \`${LOGIN_USER}\`
+*IP Address:* \`${LOGIN_IP}\`"
 
 if [ ! -z "$LOCATION" ]; then
     MESSAGE="${MESSAGE}
-
-📍 *LOCATION*
-\`\`\`
-${LOCATION}
-\`\`\`"
+*Location:* ${LOCATION}"
 fi
 
 if [ ! -z "$ISP_INFO" ]; then
     MESSAGE="${MESSAGE}
-
-🏢 *ISP PROVIDER*
-\`\`\`
-${ISP_INFO}
-\`\`\`"
+*ISP:* ${ISP_INFO}"
 fi
 
 MESSAGE="${MESSAGE}
-
-⏰ *TIMESTAMP*
-\`\`\`
-${LOGIN_TIME}
-\`\`\`
+*Time:* \`${LOGIN_TIME}\`
 
 ━━━━━━━━━━━━━━━━━━━━
 ✅ *Status:* Login Successful"
