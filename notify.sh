@@ -56,7 +56,6 @@ fi
 
 # Construct the message with enhanced header
 MESSAGE="🚨 *SSH LOGIN DETECTED* 🚨
-━━━━━━━━━━━━━━━━━━━━
 
 *Server:* \`${DISPLAY_SERVER}\`
 *User:* \`${LOGIN_USER}\`
@@ -75,7 +74,6 @@ fi
 MESSAGE="${MESSAGE}
 *Time:* \`${LOGIN_TIME}\`
 
-━━━━━━━━━━━━━━━━━━━━
 ✅ *Status:* Login Successful"
 
 # URL encode the message for Telegram API
