@@ -148,7 +148,7 @@ update_scripts() {
     if [ -f "${TEMP_DIR}/notify.sh" ]; then
         cp "${TEMP_DIR}/notify.sh" "${INSTALL_DIR}/${SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${SCRIPT_NAME}"
-        echo -e "${GREEN}✓${NC} notify.sh updated"
+        echo -e "${GREEN}✓${NC} ${SCRIPT_NAME} updated"
         UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 
@@ -156,7 +156,7 @@ update_scripts() {
     if [ -f "${TEMP_DIR}/report-failed-logins.sh" ]; then
         cp "${TEMP_DIR}/report-failed-logins.sh" "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
-        echo -e "${GREEN}✓${NC} report-failed-logins.sh updated"
+        echo -e "${GREEN}✓${NC} ${REPORT_SCRIPT_NAME} updated"
         UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 
@@ -164,7 +164,7 @@ update_scripts() {
     if [ -f "${TEMP_DIR}/uninstall.sh" ]; then
         cp "${TEMP_DIR}/uninstall.sh" "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
-        echo -e "${GREEN}✓${NC} uninstall.sh updated"
+        echo -e "${GREEN}✓${NC} ${UNINSTALL_SCRIPT_NAME} updated"
         UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 
