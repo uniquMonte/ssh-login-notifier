@@ -48,23 +48,52 @@ if command -v curl &> /dev/null && [ "$LOGIN_IP" != "Unknown" ] && [ "$LOGIN_IP"
     fi
 fi
 
-# Construct the message
-MESSAGE="🔔 *SSH Login Alert*
+# Construct the message with enhanced formatting
+MESSAGE="🚨 *SSH LOGIN DETECTED* 🚨
+━━━━━━━━━━━━━━━━━━━━
 
-*Server:* \`${HOSTNAME}\`
-*User:* \`${LOGIN_USER}\`
-*IP Address:* \`${LOGIN_IP}\`
-*Time:* \`${LOGIN_TIME}\`"
+🖥 *SERVER INFO*
+\`\`\`
+${HOSTNAME}
+\`\`\`
+
+👤 *USER*
+\`\`\`
+${LOGIN_USER}
+\`\`\`
+
+🌐 *IP ADDRESS*
+\`\`\`
+${LOGIN_IP}
+\`\`\`"
 
 if [ ! -z "$LOCATION" ]; then
     MESSAGE="${MESSAGE}
-*Location:* ${LOCATION}"
+
+📍 *LOCATION*
+\`\`\`
+${LOCATION}
+\`\`\`"
 fi
 
 if [ ! -z "$ISP_INFO" ]; then
     MESSAGE="${MESSAGE}
-*ISP:* ${ISP_INFO}"
+
+🏢 *ISP PROVIDER*
+\`\`\`
+${ISP_INFO}
+\`\`\`"
 fi
+
+MESSAGE="${MESSAGE}
+
+⏰ *TIMESTAMP*
+\`\`\`
+${LOGIN_TIME}
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━
+✅ *Status:* Login Successful"
 
 # URL encode the message for Telegram API
 # Use printf and sed for encoding
