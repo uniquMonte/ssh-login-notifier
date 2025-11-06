@@ -348,7 +348,12 @@ show_menu() {
         echo "  6) Uninstall"
         echo "  0) Exit"
         echo ""
-        read -p "Enter your choice [0-6]: " choice < /dev/tty
+        read -p "Enter your choice [0-6] (press Enter to exit): " choice < /dev/tty
+
+        # If empty input, default to exit
+        if [ -z "$choice" ]; then
+            choice="0"
+        fi
 
         case $choice in
             1)
