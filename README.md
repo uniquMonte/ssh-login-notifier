@@ -55,13 +55,25 @@ SSH Login Telegram Notifier is a lightweight security tool that sends instant no
 
 #### 3. Install the Notifier
 
-**One-line Installation** (Recommended):
+**Method 1: One-line Installation** (Recommended if your system supports it):
 
 ```bash
 sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 ```
 
-**Or clone and install manually**:
+**Method 2: Compatible Installation** (If Method 1 shows error like "No such file or directory"):
+
+Using curl:
+```bash
+curl -fsSL https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh -o /tmp/install.sh && sudo bash /tmp/install.sh
+```
+
+Or using wget:
+```bash
+wget -O /tmp/install.sh https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh && sudo bash /tmp/install.sh
+```
+
+**Method 3: Manual Installation** (Clone the repository):
 
 ```bash
 # Clone the repository
@@ -155,6 +167,30 @@ You'll be asked whether to keep or remove configuration files.
 
 ### Troubleshooting
 
+**Installation Error: "No such file or directory"**
+
+If you see `bash: /dev/fd/63: No such file or directory` when using Method 1, it means your system doesn't support process substitution. Simply use **Method 2** (Compatible Installation) instead.
+
+This error occurs on:
+- Some restricted shell environments
+- Certain container systems
+- Systems with `/dev/fd` disabled
+
+**Receiving duplicate notifications?**
+
+If you receive two notifications (one on login, one on disconnect), your PAM configuration needs to be updated:
+
+```bash
+# Edit PAM configuration
+sudo nano /etc/pam.d/sshd
+
+# Find this line:
+session optional pam_exec.so seteuid /usr/local/bin/ssh-login-notify.sh
+
+# Change it to (add type=open_session):
+session optional pam_exec.so type=open_session seteuid /usr/local/bin/ssh-login-notify.sh
+```
+
 **Not receiving notifications?**
 
 1. Check if the service is properly configured:
@@ -245,13 +281,25 @@ SSH登录Telegram通知器是一个轻量级安全工具，当有人通过SSH成
 
 #### 3. 安装通知器
 
-**一键安装**（推荐）：
+**方法1：一键安装**（如果系统支持，推荐）：
 
 ```bash
 sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 ```
 
-**或手动克隆安装**：
+**方法2：兼容性安装**（如果方法1报错 "No such file or directory"）：
+
+使用curl：
+```bash
+curl -fsSL https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh -o /tmp/install.sh && sudo bash /tmp/install.sh
+```
+
+或使用wget：
+```bash
+wget -O /tmp/install.sh https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh && sudo bash /tmp/install.sh
+```
+
+**方法3：手动克隆安装**：
 
 ```bash
 # 克隆仓库
@@ -344,6 +392,30 @@ sudo ./uninstall.sh
 系统会询问你是否保留或删除配置文件。
 
 ### 故障排除
+
+**安装错误："No such file or directory"**
+
+如果使用方法1时看到 `bash: /dev/fd/63: No such file or directory` 错误，说明你的系统不支持进程替换。请改用**方法2**（兼容性安装）。
+
+此错误常见于：
+- 某些受限的shell环境
+- 容器系统
+- 禁用了 `/dev/fd` 的系统
+
+**收到重复通知？**
+
+如果你收到两条通知（登录时一条，断开时一条），需要更新PAM配置：
+
+```bash
+# 编辑PAM配置
+sudo nano /etc/pam.d/sshd
+
+# 找到这一行：
+session optional pam_exec.so seteuid /usr/local/bin/ssh-login-notify.sh
+
+# 修改为（添加 type=open_session）：
+session optional pam_exec.so type=open_session seteuid /usr/local/bin/ssh-login-notify.sh
+```
 
 **没有收到通知？**
 
