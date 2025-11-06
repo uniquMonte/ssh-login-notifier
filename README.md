@@ -33,16 +33,23 @@ Search for `@userinfobot` in Telegram and start a chat to get your Chat ID.
 
 #### 3. Install
 
-**Recommended: Pipe Mode**
+**Method 1: Pipe Mode** (Best compatibility)
 ```bash
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
 ```
 
-**Alternative: Download First**
+**Method 2: Process Substitution** (If your system supports it)
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
+```
+
+**Method 3: Download First**
 ```bash
 curl -O https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh
 sudo bash install.sh
 ```
+
+> **Note**: If Method 2 shows "No such file or directory", use Method 1 or 3.
 
 During installation, you'll configure:
 - Telegram Bot Token
@@ -55,7 +62,11 @@ During installation, you'll configure:
 Run the installer again to access the management menu:
 
 ```bash
+# Method 1: Pipe mode
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
+
+# Method 2: Process substitution (if supported)
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 ```
 
 Menu options:
@@ -148,12 +159,11 @@ sudo journalctl | grep "Failed password" | tail -20
 ### Uninstall
 
 ```bash
+# Run management menu and choose option 6
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
-# Choose option 6: Uninstall
-```
+# Or: sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 
-Or directly:
-```bash
+# Or run uninstaller directly
 sudo /usr/local/bin/ssh-login-notifier-uninstall.sh
 ```
 
@@ -192,16 +202,23 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 #### 3. 安装
 
-**推荐：管道模式**
+**方法1：管道模式**（兼容性最好）
 ```bash
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
 ```
 
-**备选：先下载**
+**方法2：进程替换**（如果系统支持）
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
+```
+
+**方法3：先下载**
 ```bash
 curl -O https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh
 sudo bash install.sh
 ```
+
+> **注意**：如果方法2显示"No such file or directory"，请使用方法1或3。
 
 安装时需要配置：
 - Telegram Bot Token
@@ -214,7 +231,11 @@ sudo bash install.sh
 再次运行安装脚本可访问管理菜单：
 
 ```bash
+# 方法1：管道模式
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
+
+# 方法2：进程替换（如果支持）
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 ```
 
 菜单选项：
@@ -307,12 +328,11 @@ sudo journalctl | grep "Failed password" | tail -20
 ### 卸载
 
 ```bash
+# 运行管理菜单并选择选项6
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
-# 选择选项 6：卸载
-```
+# 或：sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
 
-或直接运行：
-```bash
+# 或直接运行卸载程序
 sudo /usr/local/bin/ssh-login-notifier-uninstall.sh
 ```
 
