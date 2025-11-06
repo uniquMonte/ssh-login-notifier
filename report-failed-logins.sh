@@ -134,11 +134,20 @@ fi
 # Extract failed login attempts from the log
 # Look for patterns like "Failed password for" or "Invalid user"
 TEMP_FILE=$(mktemp)
-grep -E "(Failed password|Invalid user|authentication failure)" "$LOG_FILE" | \
-    awk -v start="$START_TIME" '
-    $0 ~ start {flag=1}
-    flag {print}
-    ' > "$TEMP_FILE"
+
+# If using journalctl, logs are already time-filtered by --since
+# If using log files, we need to filter by time
+if [ "$USING_JOURNALCTL" = "1" ]; then
+    # Journalctl already filtered by time, just extract failed attempts
+    grep -E "(Failed password|Invalid user|authentication failure)" "$LOG_FILE" > "$TEMP_FILE"
+else
+    # For log files, filter by time using awk
+    grep -E "(Failed password|Invalid user|authentication failure)" "$LOG_FILE" | \
+        awk -v start="$START_TIME" '
+        $0 ~ start {flag=1}
+        flag {print}
+        ' > "$TEMP_FILE"
+fi
 
 # Count total failed attempts
 TOTAL_FAILURES=$(wc -l < "$TEMP_FILE")
