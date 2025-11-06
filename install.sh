@@ -171,21 +171,21 @@ reconfigure() {
     fi
 
     echo "Current Bot Token: ${TELEGRAM_BOT_TOKEN:0:10}..."
-    read -p "Enter new Telegram Bot Token (or press Enter to keep current): " NEW_BOT_TOKEN
+    read -p "Enter new Telegram Bot Token (or press Enter to keep current): " NEW_BOT_TOKEN < /dev/tty
     if [ -z "$NEW_BOT_TOKEN" ]; then
         NEW_BOT_TOKEN="$TELEGRAM_BOT_TOKEN"
     fi
 
     echo ""
     echo "Current Chat ID: ${TELEGRAM_CHAT_ID}"
-    read -p "Enter new Telegram Chat ID (or press Enter to keep current): " NEW_CHAT_ID
+    read -p "Enter new Telegram Chat ID (or press Enter to keep current): " NEW_CHAT_ID < /dev/tty
     if [ -z "$NEW_CHAT_ID" ]; then
         NEW_CHAT_ID="$TELEGRAM_CHAT_ID"
     fi
 
     echo ""
     echo "Current Server Name: ${SERVER_NAME:-$(hostname)}"
-    read -p "Enter new server name (or press Enter to keep current): " NEW_SERVER_NAME
+    read -p "Enter new server name (or press Enter to keep current): " NEW_SERVER_NAME < /dev/tty
     if [ -z "$NEW_SERVER_NAME" ]; then
         NEW_SERVER_NAME="$SERVER_NAME"
     fi
@@ -201,7 +201,7 @@ reconfigure() {
     echo "  5) Disabled (no reports)"
     echo "  6) Keep current setting"
     echo ""
-    read -p "Enter your choice [1-6]: " REPORT_CHOICE
+    read -p "Enter your choice [1-6]: " REPORT_CHOICE < /dev/tty
 
     case "$REPORT_CHOICE" in
         1)
@@ -305,32 +305,32 @@ show_menu() {
         echo "  6) Uninstall"
         echo "  0) Exit"
         echo ""
-        read -p "Enter your choice [0-6]: " choice
+        read -p "Enter your choice [0-6]: " choice < /dev/tty
 
         case $choice in
             1)
                 show_config
-                read -p "Press Enter to continue..."
+                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             2)
                 reconfigure
-                read -p "Press Enter to continue..."
+                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             3)
                 update_scripts
-                read -p "Press Enter to continue..."
+                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             4)
                 test_notification
-                read -p "Press Enter to continue..."
+                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             5)
                 run_report
-                read -p "Press Enter to continue..."
+                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             6)
                 echo ""
-                read -p "Are you sure you want to uninstall? (y/N): " confirm
+                read -p "Are you sure you want to uninstall? (y/N): " confirm < /dev/tty
                 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
                     if command -v curl &> /dev/null; then
                         bash <(curl -fsSL "${GITHUB_RAW_URL}/uninstall.sh")
@@ -403,7 +403,7 @@ do_install() {
     echo "2. Send /newbot and follow the instructions"
     echo "3. Copy the bot token"
     echo ""
-    read -p "Enter your Telegram Bot Token: " BOT_TOKEN
+    read -p "Enter your Telegram Bot Token: " BOT_TOKEN < /dev/tty
 
     echo ""
     echo "To get your Chat ID:"
@@ -412,7 +412,7 @@ do_install() {
     echo "3. Or send a message to your bot and visit:"
     echo "   https://api.telegram.org/bot<YourBOTToken>/getUpdates"
     echo ""
-    read -p "Enter your Telegram Chat ID: " CHAT_ID
+    read -p "Enter your Telegram Chat ID: " CHAT_ID < /dev/tty
 
     # Validate inputs
     if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
@@ -426,7 +426,7 @@ do_install() {
     echo "Set a friendly name for this server (e.g., 'Production Server', 'Dev VPS')"
     echo "Leave empty to use system hostname: $(hostname)"
     echo ""
-    read -p "Enter custom server name (or press Enter to skip): " SERVER_NAME
+    read -p "Enter custom server name (or press Enter to skip): " SERVER_NAME < /dev/tty
 
     # Ask for failed login report configuration
     echo ""
@@ -440,7 +440,7 @@ do_install() {
     echo "  4) Daily (once per day at 8:00 AM)"
     echo "  5) Disabled (no reports)"
     echo ""
-    read -p "Enter your choice [1-5] (default: 5-Disabled): " REPORT_CHOICE
+    read -p "Enter your choice [1-5] (default: 5-Disabled): " REPORT_CHOICE < /dev/tty
 
     case "$REPORT_CHOICE" in
         1)
