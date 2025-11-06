@@ -115,6 +115,14 @@ if [ -z "$SKIP_CONFIG" ]; then
         exit 1
     fi
 
+    # Ask for custom server name
+    echo ""
+    echo "Custom Server Name (Optional):"
+    echo "Set a friendly name for this server (e.g., 'Production Server', 'Dev VPS')"
+    echo "Leave empty to use system hostname: $(hostname)"
+    echo ""
+    read -p "Enter custom server name (or press Enter to skip): " SERVER_NAME
+
     # Create config file
     cat > "$CONFIG_FILE" <<EOF
 # Telegram Bot Configuration for SSH Login Notifier
@@ -125,6 +133,10 @@ TELEGRAM_BOT_TOKEN="${BOT_TOKEN}"
 
 # Your Telegram Chat ID (can be user ID or group ID)
 TELEGRAM_CHAT_ID="${CHAT_ID}"
+
+# Custom server name (optional)
+# If not set, system hostname will be used
+SERVER_NAME="${SERVER_NAME}"
 EOF
 
     chmod 600 "$CONFIG_FILE"
