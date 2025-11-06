@@ -123,6 +123,43 @@ if [ -z "$SKIP_CONFIG" ]; then
     echo ""
     read -p "Enter custom server name (or press Enter to skip): " SERVER_NAME
 
+    # Ask for failed login report configuration
+    echo ""
+    echo "Failed Login Report (Optional):"
+    echo "Receive periodic reports about failed SSH login attempts."
+    echo ""
+    echo "Select report frequency:"
+    echo "  1) Hourly (every hour)"
+    echo "  2) Every 6 hours"
+    echo "  3) Every 12 hours"
+    echo "  4) Daily (once per day)"
+    echo "  5) Disabled (no reports)"
+    echo ""
+    read -p "Enter your choice [1-5] (default: 5-Disabled): " REPORT_CHOICE
+
+    case "$REPORT_CHOICE" in
+        1)
+            REPORT_INTERVAL="hourly"
+            CRON_SCHEDULE="0 * * * *"
+            ;;
+        2)
+            REPORT_INTERVAL="6hours"
+            CRON_SCHEDULE="0 */6 * * *"
+            ;;
+        3)
+            REPORT_INTERVAL="12hours"
+            CRON_SCHEDULE="0 */12 * * *"
+            ;;
+        4)
+            REPORT_INTERVAL="daily"
+            CRON_SCHEDULE="0 8 * * *"
+            ;;
+        *)
+            REPORT_INTERVAL="disabled"
+            CRON_SCHEDULE=""
+            ;;
+    esac
+
     # Create config file
     cat > "$CONFIG_FILE" <<EOF
 # Telegram Bot Configuration for SSH Login Notifier
@@ -137,6 +174,10 @@ TELEGRAM_CHAT_ID="${CHAT_ID}"
 # Custom server name (optional)
 # If not set, system hostname will be used
 SERVER_NAME="${SERVER_NAME}"
+
+# Failed login report interval
+# Options: hourly, 6hours, 12hours, daily, disabled
+REPORT_INTERVAL="${REPORT_INTERVAL}"
 EOF
 
     chmod 600 "$CONFIG_FILE"
@@ -199,6 +240,44 @@ else
     echo -e "${GREEN}✓${NC} PAM configured successfully"
 fi
 
+# Install failed login report script if enabled
+if [ "$REPORT_INTERVAL" != "disabled" ] && [ ! -z "$CRON_SCHEDULE" ]; then
+    echo ""
+    echo -e "${YELLOW}Step 6:${NC} Setting up failed login reports..."
+
+    # Download or copy the report script
+    REPORT_SCRIPT_NAME="ssh-failed-login-report.sh"
+    if [ -f "./report-failed-logins.sh" ]; then
+        cp ./report-failed-logins.sh "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+    else
+        # Try to download from GitHub
+        if command -v curl &> /dev/null; then
+            curl -fsSL "${GITHUB_RAW_URL}/report-failed-logins.sh" -o "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+        elif command -v wget &> /dev/null; then
+            wget -q -O "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" "${GITHUB_RAW_URL}/report-failed-logins.sh"
+        fi
+    fi
+
+    if [ -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" ]; then
+        chmod 755 "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+        echo -e "${GREEN}✓${NC} Report script installed"
+
+        # Set up cron job
+        CRON_LINE="${CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+
+        # Check if cron job already exists
+        if crontab -l 2>/dev/null | grep -q "ssh-failed-login-report.sh"; then
+            echo -e "${YELLOW}!${NC} Cron job already exists"
+        else
+            # Add cron job
+            (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
+            echo -e "${GREEN}✓${NC} Cron job configured (${REPORT_INTERVAL})"
+        fi
+    else
+        echo -e "${YELLOW}!${NC} Could not install report script"
+    fi
+fi
+
 # Final instructions
 echo ""
 echo -e "${GREEN}=====================================${NC}"
@@ -209,9 +288,21 @@ echo "Configuration:"
 echo "  - Config file: ${CONFIG_FILE}"
 echo "  - Script location: ${INSTALL_DIR}/${SCRIPT_NAME}"
 echo "  - PAM config: ${PAM_CONFIG}"
+
+if [ "$REPORT_INTERVAL" != "disabled" ]; then
+    echo "  - Failed login reports: Enabled (${REPORT_INTERVAL})"
+else
+    echo "  - Failed login reports: Disabled"
+fi
+
 echo ""
 echo "The notifier is now active!"
 echo "You should receive a Telegram message whenever someone logs in via SSH."
+
+if [ "$REPORT_INTERVAL" != "disabled" ]; then
+    echo "You will also receive periodic reports about failed login attempts."
+fi
+
 echo ""
 echo "To test, try logging in via SSH from another terminal."
 echo ""

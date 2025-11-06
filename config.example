@@ -23,3 +23,9 @@ TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
 # Examples: "Production Server", "Dev VPS", "My Personal Server"
 # If not set or left empty, the system hostname will be used
 SERVER_NAME="My VPS Server"
+
+# Failed login report interval (optional)
+# Receive periodic reports about failed SSH login attempts
+# Options: hourly, 6hours, 12hours, daily, disabled
+# Default: disabled
+REPORT_INTERVAL="daily"

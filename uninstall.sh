@@ -47,7 +47,25 @@ else
 fi
 
 echo ""
-echo -e "${YELLOW}Step 2:${NC} Removing PAM configuration..."
+echo -e "${YELLOW}Step 2:${NC} Removing failed login report script..."
+REPORT_SCRIPT_NAME="ssh-failed-login-report.sh"
+if [ -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" ]; then
+    rm -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+    echo -e "${GREEN}✓${NC} Report script removed"
+else
+    echo -e "${YELLOW}!${NC} Report script not found (not installed or already removed)"
+fi
+
+# Remove cron job
+if crontab -l 2>/dev/null | grep -q "ssh-failed-login-report.sh"; then
+    crontab -l 2>/dev/null | grep -v "ssh-failed-login-report.sh" | grep -v "# SSH Failed Login Report" | crontab -
+    echo -e "${GREEN}✓${NC} Cron job removed"
+else
+    echo -e "${YELLOW}!${NC} No cron job found"
+fi
+
+echo ""
+echo -e "${YELLOW}Step 3:${NC} Removing PAM configuration..."
 if [ -f "$PAM_CONFIG" ]; then
     # Backup current config
     cp "$PAM_CONFIG" "${PAM_CONFIG}.backup.$(date +%Y%m%d%H%M%S)"
@@ -64,7 +82,7 @@ fi
 echo ""
 read -p "Do you want to remove configuration files? (y/N): " REMOVE_CONFIG
 if [ "$REMOVE_CONFIG" = "y" ] || [ "$REMOVE_CONFIG" = "Y" ]; then
-    echo -e "${YELLOW}Step 3:${NC} Removing configuration..."
+    echo -e "${YELLOW}Step 4:${NC} Removing configuration..."
     if [ -d "$CONFIG_DIR" ]; then
         rm -rf "$CONFIG_DIR"
         echo -e "${GREEN}✓${NC} Configuration removed"
@@ -72,7 +90,7 @@ if [ "$REMOVE_CONFIG" = "y" ] || [ "$REMOVE_CONFIG" = "Y" ]; then
         echo -e "${YELLOW}!${NC} Configuration directory not found"
     fi
 else
-    echo -e "${YELLOW}Step 3:${NC} Keeping configuration files at ${CONFIG_DIR}"
+    echo -e "${YELLOW}Step 4:${NC} Keeping configuration files at ${CONFIG_DIR}"
 fi
 
 echo ""
