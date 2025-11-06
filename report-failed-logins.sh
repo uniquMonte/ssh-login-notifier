@@ -75,57 +75,62 @@ else
 fi
 
 # Detect log file location
+# Priority: journalctl (has native time filtering) > traditional log files
 LOG_FILE=""
-POSSIBLE_LOGS=(
-    "/var/log/auth.log"
-    "/var/log/secure"
-    "/var/log/syslog"
-    "/var/log/messages"
-)
+USING_JOURNALCTL=0
 
-for log in "${POSSIBLE_LOGS[@]}"; do
-    if [ -f "$log" ]; then
-        # Check if the log contains SSH-related entries
-        if grep -q "sshd\|ssh" "$log" 2>/dev/null; then
-            LOG_FILE="$log"
-            break
-        fi
+# Try journalctl first (systemd systems with native --since time filtering)
+if command -v journalctl &> /dev/null; then
+    # Create a temporary file for journalctl output
+    JOURNAL_TEMP=$(mktemp)
+
+    # Try multiple approaches to get SSH logs from journalctl
+    # Method 1: Using _COMM field (most reliable for sshd)
+    journalctl _COMM=sshd --since "$HOURS_AGO hours ago" 2>/dev/null > "$JOURNAL_TEMP"
+
+    # Method 2: If empty, try with -u sshd
+    if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+        journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
     fi
-done
 
+    # Method 3: If still empty, try with -u ssh
+    if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+        journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
+    fi
+
+    # Method 4: Last resort - search all logs for sshd
+    if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+        journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep -i sshd > "$JOURNAL_TEMP"
+    fi
+
+    # Verify we have actual log entries (not just "No entries")
+    if [ -s "$JOURNAL_TEMP" ] && ! grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+        LOG_FILE="$JOURNAL_TEMP"
+        USING_JOURNALCTL=1
+    else
+        rm -f "$JOURNAL_TEMP"
+    fi
+fi
+
+# Fallback to traditional log files only if journalctl failed
 if [ -z "$LOG_FILE" ]; then
-    # Try journalctl as fallback (systemd systems)
-    if command -v journalctl &> /dev/null; then
-        # Create a temporary file for journalctl output
-        JOURNAL_TEMP=$(mktemp)
+    POSSIBLE_LOGS=(
+        "/var/log/auth.log"
+        "/var/log/secure"
+        "/var/log/syslog"
+        "/var/log/messages"
+    )
 
-        # Try multiple approaches to get SSH logs from journalctl
-        # Method 1: Using _COMM field (most reliable for sshd)
-        journalctl _COMM=sshd --since "$HOURS_AGO hours ago" 2>/dev/null > "$JOURNAL_TEMP"
-
-        # Method 2: If empty, try with -u sshd
-        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
-            journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
+    for log in "${POSSIBLE_LOGS[@]}"; do
+        if [ -f "$log" ]; then
+            # Check if the log contains SSH-related entries
+            if grep -q "sshd\|ssh" "$log" 2>/dev/null; then
+                LOG_FILE="$log"
+                USING_JOURNALCTL=0
+                break
+            fi
         fi
-
-        # Method 3: If still empty, try with -u ssh
-        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
-            journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
-        fi
-
-        # Method 4: Last resort - search all logs for sshd
-        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
-            journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep -i sshd > "$JOURNAL_TEMP"
-        fi
-
-        # Verify we have actual log entries (not just "No entries")
-        if [ -s "$JOURNAL_TEMP" ] && ! grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
-            LOG_FILE="$JOURNAL_TEMP"
-            USING_JOURNALCTL=1
-        else
-            rm -f "$JOURNAL_TEMP"
-        fi
-    fi
+    done
 fi
 
 if [ -z "$LOG_FILE" ]; then
