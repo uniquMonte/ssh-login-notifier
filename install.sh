@@ -346,9 +346,9 @@ show_menu() {
         echo "  4) Test notification"
         echo "  5) Run failed login report now"
         echo "  6) Uninstall"
-        echo "  0) Exit"
+        echo "  0) Exit (or just press Enter)"
         echo ""
-        read -p "Enter your choice [0-6] (press Enter to exit): " choice < /dev/tty
+        read -p "Enter your choice [0-6]: " choice < /dev/tty
 
         # If empty input, default to exit
         if [ -z "$choice" ]; then
