@@ -199,36 +199,46 @@ reconfigure() {
     echo "  3) Every 12 hours"
     echo "  4) Daily (once per day at 8:00 AM)"
     echo "  5) Disabled (no reports)"
-    echo "  6) Keep current setting"
     echo ""
-    read -p "Enter your choice [1-6]: " REPORT_CHOICE < /dev/tty
+    read -p "Enter your choice [1-5] (press Enter to keep current): " REPORT_CHOICE < /dev/tty
 
-    case "$REPORT_CHOICE" in
-        1)
-            NEW_REPORT_INTERVAL="hourly"
-            NEW_CRON_SCHEDULE="0 * * * *"
-            ;;
-        2)
-            NEW_REPORT_INTERVAL="6hours"
-            NEW_CRON_SCHEDULE="0 */6 * * *"
-            ;;
-        3)
-            NEW_REPORT_INTERVAL="12hours"
-            NEW_CRON_SCHEDULE="0 */12 * * *"
-            ;;
-        4)
-            NEW_REPORT_INTERVAL="daily"
-            NEW_CRON_SCHEDULE="0 8 * * *"
-            ;;
-        5)
-            NEW_REPORT_INTERVAL="disabled"
-            NEW_CRON_SCHEDULE=""
-            ;;
-        *)
-            NEW_REPORT_INTERVAL="$REPORT_INTERVAL"
-            NEW_CRON_SCHEDULE=""
-            ;;
-    esac
+    # If empty, keep current setting
+    if [ -z "$REPORT_CHOICE" ]; then
+        NEW_REPORT_INTERVAL="$REPORT_INTERVAL"
+        UPDATE_CRON=0
+    else
+        case "$REPORT_CHOICE" in
+            1)
+                NEW_REPORT_INTERVAL="hourly"
+                NEW_CRON_SCHEDULE="0 * * * *"
+                UPDATE_CRON=1
+                ;;
+            2)
+                NEW_REPORT_INTERVAL="6hours"
+                NEW_CRON_SCHEDULE="0 */6 * * *"
+                UPDATE_CRON=1
+                ;;
+            3)
+                NEW_REPORT_INTERVAL="12hours"
+                NEW_CRON_SCHEDULE="0 */12 * * *"
+                UPDATE_CRON=1
+                ;;
+            4)
+                NEW_REPORT_INTERVAL="daily"
+                NEW_CRON_SCHEDULE="0 8 * * *"
+                UPDATE_CRON=1
+                ;;
+            5)
+                NEW_REPORT_INTERVAL="disabled"
+                NEW_CRON_SCHEDULE=""
+                UPDATE_CRON=1
+                ;;
+            *)
+                NEW_REPORT_INTERVAL="$REPORT_INTERVAL"
+                UPDATE_CRON=0
+                ;;
+        esac
+    fi
 
     # Save new configuration
     cat > "$CONFIG_FILE" <<EOF
@@ -252,21 +262,22 @@ EOF
 
     chmod 600 "$CONFIG_FILE"
 
-    # Update cron job if needed
-    if [ ! -z "$NEW_CRON_SCHEDULE" ] && [ "$REPORT_CHOICE" != "6" ]; then
+    # Update cron job if needed (only if user made a change)
+    if [ "$UPDATE_CRON" = "1" ]; then
         # Remove old cron job
         crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | crontab -
 
-        # Add new cron job
-        CRON_LINE="${NEW_CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
-        (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
-        echo ""
-        echo -e "${GREEN}✓${NC} Cron job updated"
-    elif [ "$NEW_REPORT_INTERVAL" = "disabled" ] && [ "$REPORT_CHOICE" != "6" ]; then
-        # Remove cron job
-        crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | crontab -
-        echo ""
-        echo -e "${GREEN}✓${NC} Cron job removed"
+        if [ ! -z "$NEW_CRON_SCHEDULE" ]; then
+            # Add new cron job
+            CRON_LINE="${NEW_CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
+            (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
+            echo ""
+            echo -e "${GREEN}✓${NC} Cron job updated"
+        else
+            # Disabled - cron job already removed above
+            echo ""
+            echo -e "${GREEN}✓${NC} Cron job removed"
+        fi
     fi
 
     echo ""
