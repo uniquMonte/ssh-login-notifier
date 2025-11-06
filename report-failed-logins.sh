@@ -76,12 +76,45 @@ fi
 
 # Detect log file location
 LOG_FILE=""
-if [ -f "/var/log/auth.log" ]; then
-    LOG_FILE="/var/log/auth.log"
-elif [ -f "/var/log/secure" ]; then
-    LOG_FILE="/var/log/secure"
-else
-    echo "SSH log file not found"
+POSSIBLE_LOGS=(
+    "/var/log/auth.log"
+    "/var/log/secure"
+    "/var/log/syslog"
+    "/var/log/messages"
+)
+
+for log in "${POSSIBLE_LOGS[@]}"; do
+    if [ -f "$log" ]; then
+        # Check if the log contains SSH-related entries
+        if grep -q "sshd\|ssh" "$log" 2>/dev/null; then
+            LOG_FILE="$log"
+            break
+        fi
+    fi
+done
+
+if [ -z "$LOG_FILE" ]; then
+    # Try journalctl as fallback (systemd systems)
+    if command -v journalctl &> /dev/null; then
+        # Create a temporary file for journalctl output
+        TEMP_FILE=$(mktemp)
+        journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null > "$TEMP_FILE"
+        if [ -s "$TEMP_FILE" ]; then
+            LOG_FILE="$TEMP_FILE"
+            USING_JOURNALCTL=1
+        else
+            rm -f "$TEMP_FILE"
+        fi
+    fi
+fi
+
+if [ -z "$LOG_FILE" ]; then
+    echo "SSH log file not found. Tried:"
+    echo "  - /var/log/auth.log"
+    echo "  - /var/log/secure"
+    echo "  - /var/log/syslog"
+    echo "  - /var/log/messages"
+    echo "  - journalctl -u sshd"
     exit 1
 fi
 
@@ -177,8 +210,13 @@ ${TOP_USERS}
 ⚠️ Consider blocking persistent attackers!"
 fi
 
-# Clean up temp file
+# Clean up temp files
 rm -f "$TEMP_FILE"
+
+# Clean up journalctl temp file if used
+if [ "$USING_JOURNALCTL" = "1" ] && [ -f "$LOG_FILE" ]; then
+    rm -f "$LOG_FILE"
+fi
 
 # URL encode the message
 MESSAGE_ENCODED=$(echo -n "$MESSAGE" | jq -sRr @uri 2>/dev/null || python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read()))" 2>/dev/null || perl -MURI::Escape -e 'print uri_escape(<STDIN>)' 2>/dev/null)

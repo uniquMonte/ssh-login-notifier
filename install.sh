@@ -246,7 +246,7 @@ if [ "$REPORT_INTERVAL" != "disabled" ] && [ ! -z "$CRON_SCHEDULE" ]; then
     echo -e "${YELLOW}Step 6:${NC} Setting up failed login reports..."
 
     # Download or copy the report script
-    REPORT_SCRIPT_NAME="ssh-failed-login-report.sh"
+    REPORT_SCRIPT_NAME="report-failed-logins.sh"
     if [ -f "./report-failed-logins.sh" ]; then
         cp ./report-failed-logins.sh "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
     else
@@ -266,7 +266,7 @@ if [ "$REPORT_INTERVAL" != "disabled" ] && [ ! -z "$CRON_SCHEDULE" ]; then
         CRON_LINE="${CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
 
         # Check if cron job already exists
-        if crontab -l 2>/dev/null | grep -q "ssh-failed-login-report.sh"; then
+        if crontab -l 2>/dev/null | grep -q "report-failed-logins.sh"; then
             echo -e "${YELLOW}!${NC} Cron job already exists"
         else
             # Add cron job

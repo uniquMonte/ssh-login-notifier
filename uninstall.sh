@@ -48,7 +48,7 @@ fi
 
 echo ""
 echo -e "${YELLOW}Step 2:${NC} Removing failed login report script..."
-REPORT_SCRIPT_NAME="ssh-failed-login-report.sh"
+REPORT_SCRIPT_NAME="report-failed-logins.sh"
 if [ -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" ]; then
     rm -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
     echo -e "${GREEN}✓${NC} Report script removed"
@@ -57,8 +57,8 @@ else
 fi
 
 # Remove cron job
-if crontab -l 2>/dev/null | grep -q "ssh-failed-login-report.sh"; then
-    crontab -l 2>/dev/null | grep -v "ssh-failed-login-report.sh" | grep -v "# SSH Failed Login Report" | crontab -
+if crontab -l 2>/dev/null | grep -q "report-failed-logins.sh"; then
+    crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | grep -v "# SSH Failed Login Report" | crontab -
     echo -e "${GREEN}✓${NC} Cron job removed"
 else
     echo -e "${YELLOW}!${NC} No cron job found"
