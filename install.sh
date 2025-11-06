@@ -21,6 +21,8 @@ CONFIG_DIR="/etc/ssh-login-notifier"
 CONFIG_FILE="${CONFIG_DIR}/config"
 SCRIPT_NAME="ssh-login-notify.sh"
 PAM_CONFIG="/etc/pam.d/sshd"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main"
+TEMP_DIR=$(mktemp -d)
 
 echo -e "${GREEN}=====================================${NC}"
 echo -e "${GREEN}SSH Login Telegram Notifier Installer${NC}"
@@ -30,16 +32,47 @@ echo ""
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Error: This script must be run as root${NC}"
-    echo "Please run: sudo ./install.sh"
+    echo "Please run: sudo bash <(curl -Ls ${GITHUB_RAW_URL}/install.sh)"
+    echo "Or: sudo ./install.sh"
     exit 1
 fi
 
-# Check if notify.sh exists
-if [ ! -f "./notify.sh" ]; then
-    echo -e "${RED}Error: notify.sh not found in current directory${NC}"
-    exit 1
+# Cleanup function
+cleanup() {
+    if [ -d "$TEMP_DIR" ]; then
+        rm -rf "$TEMP_DIR"
+    fi
+}
+trap cleanup EXIT
+
+# Check if notify.sh exists locally, otherwise download from GitHub
+NOTIFY_SCRIPT=""
+if [ -f "./notify.sh" ]; then
+    echo -e "${GREEN}✓${NC} Found notify.sh locally"
+    NOTIFY_SCRIPT="./notify.sh"
+else
+    echo -e "${YELLOW}Downloading notify.sh from GitHub...${NC}"
+
+    # Check if curl or wget is available
+    if command -v curl &> /dev/null; then
+        curl -fsSL "${GITHUB_RAW_URL}/notify.sh" -o "${TEMP_DIR}/notify.sh"
+    elif command -v wget &> /dev/null; then
+        wget -q -O "${TEMP_DIR}/notify.sh" "${GITHUB_RAW_URL}/notify.sh"
+    else
+        echo -e "${RED}Error: Neither curl nor wget found. Cannot download notify.sh${NC}"
+        exit 1
+    fi
+
+    if [ ! -f "${TEMP_DIR}/notify.sh" ]; then
+        echo -e "${RED}Error: Failed to download notify.sh${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓${NC} Downloaded notify.sh successfully"
+    NOTIFY_SCRIPT="${TEMP_DIR}/notify.sh"
 fi
 
+echo ""
 echo -e "${YELLOW}Step 1:${NC} Creating configuration directory..."
 mkdir -p "$CONFIG_DIR"
 chmod 755 "$CONFIG_DIR"
@@ -126,7 +159,7 @@ fi
 # Install the script
 echo ""
 echo -e "${YELLOW}Step 4:${NC} Installing notification script..."
-cp notify.sh "${INSTALL_DIR}/${SCRIPT_NAME}"
+cp "$NOTIFY_SCRIPT" "${INSTALL_DIR}/${SCRIPT_NAME}"
 chmod 755 "${INSTALL_DIR}/${SCRIPT_NAME}"
 echo -e "${GREEN}✓${NC} Script installed to ${INSTALL_DIR}/${SCRIPT_NAME}"
 
@@ -170,5 +203,5 @@ echo ""
 echo "To test, try logging in via SSH from another terminal."
 echo ""
 echo "To uninstall, run:"
-echo "  sudo ./uninstall.sh"
+echo "  sudo bash <(curl -Ls ${GITHUB_RAW_URL}/uninstall.sh)"
 echo ""

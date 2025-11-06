@@ -55,6 +55,14 @@ SSH Login Telegram Notifier is a lightweight security tool that sends instant no
 
 #### 3. Install the Notifier
 
+**One-line Installation** (Recommended):
+
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
+```
+
+**Or clone and install manually**:
+
 ```bash
 # Clone the repository
 git clone https://github.com/uniquMonte/ssh-login-notifier.git
@@ -132,6 +140,12 @@ sudo nano /etc/ssh-login-notifier/config
 ### Uninstallation
 
 To remove the notifier:
+
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/uninstall.sh)
+```
+
+Or if you cloned the repository:
 
 ```bash
 sudo ./uninstall.sh
@@ -231,6 +245,14 @@ SSH登录Telegram通知器是一个轻量级安全工具，当有人通过SSH成
 
 #### 3. 安装通知器
 
+**一键安装**（推荐）：
+
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh)
+```
+
+**或手动克隆安装**：
+
 ```bash
 # 克隆仓库
 git clone https://github.com/uniquMonte/ssh-login-notifier.git
@@ -308,6 +330,12 @@ sudo nano /etc/ssh-login-notifier/config
 ### 卸载
 
 要删除通知器：
+
+```bash
+sudo bash <(curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/uninstall.sh)
+```
+
+或如果你克隆了仓库：
 
 ```bash
 sudo ./uninstall.sh
