@@ -29,8 +29,14 @@ fi
 LOGIN_USER="${PAM_USER:-$USER}"
 LOGIN_IP="${PAM_RHOST:-Unknown}"
 LOGIN_TIME=$(date '+%Y-%m-%d %H:%M:%S %Z')
-HOSTNAME=$(hostname)
 LOGIN_SERVICE="${PAM_SERVICE:-ssh}"
+
+# Use custom server name from config, or fallback to hostname
+if [ ! -z "$SERVER_NAME" ]; then
+    DISPLAY_SERVER="$SERVER_NAME"
+else
+    DISPLAY_SERVER=$(hostname)
+fi
 
 # Get geographic location info for the IP (optional, requires internet)
 if command -v curl &> /dev/null && [ "$LOGIN_IP" != "Unknown" ] && [ "$LOGIN_IP" != "" ]; then
@@ -54,7 +60,7 @@ MESSAGE="🚨 *SSH LOGIN DETECTED* 🚨
 
 🖥 *SERVER INFO*
 \`\`\`
-${HOSTNAME}
+${DISPLAY_SERVER}
 \`\`\`
 
 👤 *USER*
