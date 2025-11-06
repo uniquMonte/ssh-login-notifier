@@ -146,10 +146,6 @@ update_scripts() {
 
     # Update notify.sh
     if [ -f "${TEMP_DIR}/notify.sh" ]; then
-        # Backup old script
-        if [ -f "${INSTALL_DIR}/${SCRIPT_NAME}" ]; then
-            cp "${INSTALL_DIR}/${SCRIPT_NAME}" "${INSTALL_DIR}/${SCRIPT_NAME}.backup.$(date +%Y%m%d%H%M%S)"
-        fi
         cp "${TEMP_DIR}/notify.sh" "${INSTALL_DIR}/${SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${SCRIPT_NAME}"
         echo -e "${GREEN}✓${NC} notify.sh updated"
@@ -158,10 +154,6 @@ update_scripts() {
 
     # Update report-failed-logins.sh
     if [ -f "${TEMP_DIR}/report-failed-logins.sh" ]; then
-        # Backup old script
-        if [ -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" ]; then
-            cp "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}.backup.$(date +%Y%m%d%H%M%S)"
-        fi
         cp "${TEMP_DIR}/report-failed-logins.sh" "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
         echo -e "${GREEN}✓${NC} report-failed-logins.sh updated"
@@ -170,10 +162,6 @@ update_scripts() {
 
     # Update uninstall.sh
     if [ -f "${TEMP_DIR}/uninstall.sh" ]; then
-        # Backup old script
-        if [ -f "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" ]; then
-            cp "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}.backup.$(date +%Y%m%d%H%M%S)"
-        fi
         cp "${TEMP_DIR}/uninstall.sh" "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
         echo -e "${GREEN}✓${NC} uninstall.sh updated"
