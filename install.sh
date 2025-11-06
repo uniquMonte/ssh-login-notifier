@@ -123,18 +123,28 @@ update_scripts() {
     echo -e "${YELLOW}Updating scripts to latest version...${NC}"
     echo ""
 
-    # Update notify.sh
+    local UNINSTALL_SCRIPT_NAME="ssh-login-notifier-uninstall.sh"
+    local UPDATE_COUNT=0
+
+    # Download all scripts
     if command -v curl &> /dev/null; then
+        echo "Downloading latest scripts from GitHub..."
         curl -fsSL "${GITHUB_RAW_URL}/notify.sh" -o "${TEMP_DIR}/notify.sh"
         curl -fsSL "${GITHUB_RAW_URL}/report-failed-logins.sh" -o "${TEMP_DIR}/report-failed-logins.sh"
+        curl -fsSL "${GITHUB_RAW_URL}/uninstall.sh" -o "${TEMP_DIR}/uninstall.sh"
     elif command -v wget &> /dev/null; then
+        echo "Downloading latest scripts from GitHub..."
         wget -q -O "${TEMP_DIR}/notify.sh" "${GITHUB_RAW_URL}/notify.sh"
         wget -q -O "${TEMP_DIR}/report-failed-logins.sh" "${GITHUB_RAW_URL}/report-failed-logins.sh"
+        wget -q -O "${TEMP_DIR}/uninstall.sh" "${GITHUB_RAW_URL}/uninstall.sh"
     else
         echo -e "${RED}Error: Neither curl nor wget found${NC}"
         return 1
     fi
 
+    echo ""
+
+    # Update notify.sh
     if [ -f "${TEMP_DIR}/notify.sh" ]; then
         # Backup old script
         if [ -f "${INSTALL_DIR}/${SCRIPT_NAME}" ]; then
@@ -143,8 +153,10 @@ update_scripts() {
         cp "${TEMP_DIR}/notify.sh" "${INSTALL_DIR}/${SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${SCRIPT_NAME}"
         echo -e "${GREEN}✓${NC} notify.sh updated"
+        UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 
+    # Update report-failed-logins.sh
     if [ -f "${TEMP_DIR}/report-failed-logins.sh" ]; then
         # Backup old script
         if [ -f "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}" ]; then
@@ -153,10 +165,30 @@ update_scripts() {
         cp "${TEMP_DIR}/report-failed-logins.sh" "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
         chmod 755 "${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
         echo -e "${GREEN}✓${NC} report-failed-logins.sh updated"
+        UPDATE_COUNT=$((UPDATE_COUNT + 1))
+    fi
+
+    # Update uninstall.sh
+    if [ -f "${TEMP_DIR}/uninstall.sh" ]; then
+        # Backup old script
+        if [ -f "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" ]; then
+            cp "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}.backup.$(date +%Y%m%d%H%M%S)"
+        fi
+        cp "${TEMP_DIR}/uninstall.sh" "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
+        chmod 755 "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
+        echo -e "${GREEN}✓${NC} uninstall.sh updated"
+        UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 
     echo ""
-    echo -e "${GREEN}Scripts updated successfully!${NC}"
+    if [ $UPDATE_COUNT -gt 0 ]; then
+        echo -e "${GREEN}Successfully updated ${UPDATE_COUNT} script(s)!${NC}"
+        echo ""
+        echo "Note: install.sh itself is not updated (it's always fresh from GitHub)"
+        echo "      config file is preserved (contains your credentials)"
+    else
+        echo -e "${YELLOW}No scripts were updated. Please check your connection.${NC}"
+    fi
 }
 
 # Function to reconfigure
