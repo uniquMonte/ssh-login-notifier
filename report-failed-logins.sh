@@ -97,28 +97,33 @@ if [ -z "$LOG_FILE" ]; then
     # Try journalctl as fallback (systemd systems)
     if command -v journalctl &> /dev/null; then
         # Create a temporary file for journalctl output
-        TEMP_FILE=$(mktemp)
+        JOURNAL_TEMP=$(mktemp)
 
         # Try multiple approaches to get SSH logs from journalctl
-        # Method 1: Search all logs for sshd (most reliable)
-        journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep sshd > "$TEMP_FILE"
+        # Method 1: Using _COMM field (most reliable for sshd)
+        journalctl _COMM=sshd --since "$HOURS_AGO hours ago" 2>/dev/null > "$JOURNAL_TEMP"
 
         # Method 2: If empty, try with -u sshd
-        if [ ! -s "$TEMP_FILE" ] || grep -q "^-- No entries --$" "$TEMP_FILE"; then
-            journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$TEMP_FILE"
+        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+            journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
         fi
 
         # Method 3: If still empty, try with -u ssh
-        if [ ! -s "$TEMP_FILE" ] || grep -q "^-- No entries --$" "$TEMP_FILE"; then
-            journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$TEMP_FILE"
+        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+            journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$JOURNAL_TEMP"
+        fi
+
+        # Method 4: Last resort - search all logs for sshd
+        if [ ! -s "$JOURNAL_TEMP" ] || grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+            journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep -i sshd > "$JOURNAL_TEMP"
         fi
 
         # Verify we have actual log entries (not just "No entries")
-        if [ -s "$TEMP_FILE" ] && ! grep -q "^-- No entries --$" "$TEMP_FILE"; then
-            LOG_FILE="$TEMP_FILE"
+        if [ -s "$JOURNAL_TEMP" ] && ! grep -q "^-- No entries --$" "$JOURNAL_TEMP"; then
+            LOG_FILE="$JOURNAL_TEMP"
             USING_JOURNALCTL=1
         else
-            rm -f "$TEMP_FILE"
+            rm -f "$JOURNAL_TEMP"
         fi
     fi
 fi
@@ -134,25 +139,28 @@ if [ -z "$LOG_FILE" ]; then
 fi
 
 # Extract failed login attempts from the log
-# Look for patterns like "Failed password for" or "Invalid user"
-TEMP_FILE=$(mktemp)
+# Look for various failure patterns
+FAILED_TEMP=$(mktemp)
+
+# Comprehensive failure patterns
+FAILURE_PATTERNS="(Failed password|Invalid user|authentication failure|Failed publickey|Connection closed by authenticating user|Disconnected from authenticating user|maximum authentication attempts|Connection reset by|Did not receive identification string)"
 
 # If using journalctl, logs are already time-filtered by --since
 # If using log files, we need to filter by time
 if [ "$USING_JOURNALCTL" = "1" ]; then
     # Journalctl already filtered by time, just extract failed attempts
-    grep -E "(Failed password|Invalid user|authentication failure)" "$LOG_FILE" > "$TEMP_FILE"
+    grep -E "$FAILURE_PATTERNS" "$LOG_FILE" > "$FAILED_TEMP"
 else
     # For log files, filter by time using awk
-    grep -E "(Failed password|Invalid user|authentication failure)" "$LOG_FILE" | \
+    grep -E "$FAILURE_PATTERNS" "$LOG_FILE" | \
         awk -v start="$START_TIME" '
         $0 ~ start {flag=1}
         flag {print}
-        ' > "$TEMP_FILE"
+        ' > "$FAILED_TEMP"
 fi
 
 # Count total failed attempts
-TOTAL_FAILURES=$(wc -l < "$TEMP_FILE")
+TOTAL_FAILURES=$(wc -l < "$FAILED_TEMP")
 
 # If no failures, send a simple message
 if [ "$TOTAL_FAILURES" -eq 0 ]; then
@@ -165,13 +173,13 @@ if [ "$TOTAL_FAILURES" -eq 0 ]; then
 Your server is secure! 🛡️"
 else
     # Extract and count unique IPs
-    IP_STATS=$(grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' "$TEMP_FILE" | \
+    IP_STATS=$(grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' "$FAILED_TEMP" | \
         sort | uniq -c | sort -rn)
 
     UNIQUE_IPS=$(echo "$IP_STATS" | wc -l)
 
     # Extract usernames
-    USER_STATS=$(grep -oE "(Failed password for (invalid user )?|Invalid user )([a-zA-Z0-9_-]+)" "$TEMP_FILE" | \
+    USER_STATS=$(grep -oE "(Failed password for (invalid user )?|Invalid user )([a-zA-Z0-9_-]+)" "$FAILED_TEMP" | \
         awk '{print $NF}' | sort | uniq -c | sort -rn)
 
     # Build Top 5 Attackers list
@@ -235,7 +243,7 @@ ${TOP_USERS}
 fi
 
 # Clean up temp files
-rm -f "$TEMP_FILE"
+rm -f "$FAILED_TEMP"
 
 # Clean up journalctl temp file if used
 if [ "$USING_JOURNALCTL" = "1" ] && [ -f "$LOG_FILE" ]; then
