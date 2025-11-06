@@ -98,21 +98,23 @@ if [ -z "$LOG_FILE" ]; then
     if command -v journalctl &> /dev/null; then
         # Create a temporary file for journalctl output
         TEMP_FILE=$(mktemp)
+
         # Try multiple approaches to get SSH logs from journalctl
-        # 1. Try with -u sshd
-        journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null > "$TEMP_FILE"
+        # Method 1: Search all logs for sshd (most reliable)
+        journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep sshd > "$TEMP_FILE"
 
-        # 2. If empty, try without -u flag (search all logs for sshd)
-        if [ ! -s "$TEMP_FILE" ]; then
-            journalctl --since "$HOURS_AGO hours ago" 2>/dev/null | grep sshd > "$TEMP_FILE"
+        # Method 2: If empty, try with -u sshd
+        if [ ! -s "$TEMP_FILE" ] || grep -q "^-- No entries --$" "$TEMP_FILE"; then
+            journalctl -u sshd --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$TEMP_FILE"
         fi
 
-        # 3. If still empty, try with ssh instead of sshd
-        if [ ! -s "$TEMP_FILE" ]; then
-            journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null > "$TEMP_FILE"
+        # Method 3: If still empty, try with -u ssh
+        if [ ! -s "$TEMP_FILE" ] || grep -q "^-- No entries --$" "$TEMP_FILE"; then
+            journalctl -u ssh --since "$HOURS_AGO hours ago" 2>/dev/null | grep -v "^-- No entries --$" > "$TEMP_FILE"
         fi
 
-        if [ -s "$TEMP_FILE" ]; then
+        # Verify we have actual log entries (not just "No entries")
+        if [ -s "$TEMP_FILE" ] && ! grep -q "^-- No entries --$" "$TEMP_FILE"; then
             LOG_FILE="$TEMP_FILE"
             USING_JOURNALCTL=1
         else
