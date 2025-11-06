@@ -156,13 +156,18 @@ TOTAL_FAILURES=$(wc -l < "$TEMP_FILE")
 
 # If no failures, send a simple message
 if [ "$TOTAL_FAILURES" -eq 0 ]; then
-    MESSAGE="✅ *SSH Security Report*
+    MESSAGE="🛡️ *SSH SECURITY REPORT* 🛡️
 
-*Server:* \`${DISPLAY_SERVER}\`
-*Period:* ${PERIOD_TEXT}
-*Status:* No failed login attempts
+📍 *Server:* \`${DISPLAY_SERVER}\`
+⏰ *Period:* ${PERIOD_TEXT}
 
-Your server is secure! 🛡️"
+━━━━━━━━━━━━━━━━━━━━━━
+✅ *STATUS: ALL CLEAR*
+━━━━━━━━━━━━━━━━━━━━━━
+
+No failed login attempts detected!
+
+🎉 Your server is secure! 🛡️"
 else
     # Extract and count unique IPs
     IP_STATS=$(grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' "$TEMP_FILE" | \
@@ -174,7 +179,10 @@ else
     USER_STATS=$(grep -oE "(Failed password for (invalid user )?|Invalid user )([a-zA-Z0-9_-]+)" "$TEMP_FILE" | \
         awk '{print $NF}' | sort | uniq -c | sort -rn)
 
-    # Build Top 5 Attackers list
+    # Get top attacker count for percentage calculation
+    TOP_ATTACKER_COUNT=$(echo "$IP_STATS" | head -1 | awk '{print $1}')
+
+    # Build Top 5 Attackers list with progress bars
     TOP_ATTACKERS=""
     COUNT=0
     while IFS= read -r line; do
@@ -184,6 +192,17 @@ else
 
         ATTEMPTS=$(echo "$line" | awk '{print $1}')
         IP=$(echo "$line" | awk '{print $2}')
+
+        # Calculate percentage
+        PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", ($ATTEMPTS/$TOTAL_FAILURES)*100}")
+
+        # Create progress bar (20 chars wide)
+        BAR_LENGTH=$(awk "BEGIN {printf \"%.0f\", ($ATTEMPTS/$TOP_ATTACKER_COUNT)*20}")
+        if [ "$BAR_LENGTH" -lt 1 ]; then
+            BAR_LENGTH=1
+        fi
+        PROGRESS_BAR=$(printf '█%.0s' $(seq 1 $BAR_LENGTH))
+        EMPTY_BAR=$(printf '░%.0s' $(seq 1 $((20-BAR_LENGTH))))
 
         # Get geographic location for the IP
         LOCATION="Unknown"
@@ -197,8 +216,19 @@ else
             fi
         fi
 
+        # Medal emoji for top 3
+        MEDAL=""
+        case $((COUNT + 1)) in
+            1) MEDAL="🥇" ;;
+            2) MEDAL="🥈" ;;
+            3) MEDAL="🥉" ;;
+            *) MEDAL="  " ;;
+        esac
+
         COUNT=$((COUNT + 1))
-        TOP_ATTACKERS="${TOP_ATTACKERS}${COUNT}. \`${IP}\` (${ATTEMPTS} attempts) - ${LOCATION}
+        TOP_ATTACKERS="${TOP_ATTACKERS}
+${MEDAL} \`${IP}\` (${LOCATION})
+${PROGRESS_BAR}${EMPTY_BAR} ${ATTEMPTS} (${PERCENTAGE}%)
 "
     done <<< "$IP_STATS"
 
@@ -219,19 +249,27 @@ else
     done <<< "$USER_STATS"
 
     # Construct the report message
-    MESSAGE="📊 *SSH Failed Login Report*
+    MESSAGE="🛡️ *SSH FAILED LOGIN REPORT* 🛡️
 
-*Server:* \`${DISPLAY_SERVER}\`
-*Period:* ${PERIOD_TEXT}
+📍 *Server:* \`${DISPLAY_SERVER}\`
+⏰ *Period:* ${PERIOD_TEXT}
 
-*Total Failed Attempts:* ${TOTAL_FAILURES}
-*Unique IPs:* ${UNIQUE_IPS}
+━━━━━━━━━━━━━━━━━━━━━━
+📊 *ATTACK SUMMARY*
+━━━━━━━━━━━━━━━━━━━━━━
 
-*Top Attackers:*
+🎯 *Total Failed Attempts:* ${TOTAL_FAILURES}
+🌐 *Unique Attacker IPs:* ${UNIQUE_IPS}
+
+━━━━━━━━━━━━━━━━━━━━━━
+🚨 *TOP ATTACKERS*
+━━━━━━━━━━━━━━━━━━━━━━
 ${TOP_ATTACKERS}
-*Most Targeted Users:*
+━━━━━━━━━━━━━━━━━━━━━━
+👤 *MOST TARGETED USERS*
+━━━━━━━━━━━━━━━━━━━━━━
 ${TOP_USERS}
-⚠️ Consider blocking persistent attackers!"
+⚠️ *Consider blocking persistent attackers!*"
 fi
 
 # Clean up temp files
