@@ -22,6 +22,7 @@ CONFIG_DIR="/etc/ssh-login-notifier"
 CONFIG_FILE="${CONFIG_DIR}/config"
 SCRIPT_NAME="ssh-login-notify.sh"
 REPORT_SCRIPT_NAME="report-failed-logins.sh"
+UNINSTALL_SCRIPT_NAME="ssh-login-notifier-uninstall.sh"
 PAM_CONFIG="/etc/pam.d/sshd"
 GITHUB_RAW_URL="https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main"
 TEMP_DIR=$(mktemp -d)
@@ -123,7 +124,6 @@ update_scripts() {
     echo -e "${YELLOW}Updating scripts to latest version...${NC}"
     echo ""
 
-    local UNINSTALL_SCRIPT_NAME="ssh-login-notifier-uninstall.sh"
     local UPDATE_COUNT=0
 
     # Download all scripts
@@ -615,6 +615,33 @@ EOF
         else
             echo -e "${YELLOW}!${NC} Could not install report script"
         fi
+    fi
+
+    # Install uninstall script
+    echo ""
+    if [ "$REPORT_INTERVAL" != "disabled" ] && [ ! -z "$CRON_SCHEDULE" ]; then
+        echo -e "${YELLOW}Step 7:${NC} Installing uninstall script..."
+    else
+        echo -e "${YELLOW}Step 6:${NC} Installing uninstall script..."
+    fi
+
+    # Download or copy the uninstall script
+    if [ -f "./uninstall.sh" ]; then
+        cp ./uninstall.sh "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
+    else
+        # Try to download from GitHub
+        if command -v curl &> /dev/null; then
+            curl -fsSL "${GITHUB_RAW_URL}/uninstall.sh" -o "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
+        elif command -v wget &> /dev/null; then
+            wget -q -O "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" "${GITHUB_RAW_URL}/uninstall.sh"
+        fi
+    fi
+
+    if [ -f "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}" ]; then
+        chmod 755 "${INSTALL_DIR}/${UNINSTALL_SCRIPT_NAME}"
+        echo -e "${GREEN}✓${NC} Uninstall script installed"
+    else
+        echo -e "${YELLOW}!${NC} Could not install uninstall script"
     fi
 
     # Final instructions
