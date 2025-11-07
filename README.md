@@ -1,4 +1,4 @@
-# SSH Login Telegram Notifier
+# SSH Login Notifier
 
 ### Features
 
@@ -11,15 +11,15 @@
 
 ### Quick Start
 
-#### 1. Create a Telegram Bot
+#### 1. Create a Bot
 
-1. Open Telegram, search for `@BotFather`
+1. Search for `@BotFather`
 2. Send `/newbot` and follow instructions
 3. Copy the **Bot Token**
 
 #### 2. Get Your Chat ID
 
-Search for `@userinfobot` in Telegram and start a chat to get your Chat ID.
+Search for `@userinfobot` and start a chat to get your Chat ID.
 
 #### 3. Install
 
@@ -42,8 +42,8 @@ sudo bash install.sh
 > **Note**: If Method 2 shows "No such file or directory", use Method 1 or 3.
 
 During installation, you'll configure:
-- Telegram Bot Token
-- Telegram Chat ID
+- Bot Token
+- Chat ID
 - Server Name (optional)
 - Failed Login Report Frequency (hourly/6h/12h/daily/disabled)
 
