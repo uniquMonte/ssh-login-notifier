@@ -11,18 +11,6 @@
 
 ### Quick Start
 
-#### 1. Create a Bot
-
-1. Search for `@BotFather`
-2. Send `/newbot` and follow instructions
-3. Copy the **Bot Token**
-
-#### 2. Get Your Chat ID
-
-Search for `@userinfobot` and start a chat to get your Chat ID.
-
-#### 3. Install
-
 **Method 1: Pipe Mode** (Best compatibility)
 ```bash
 curl -Ls https://raw.githubusercontent.com/uniquMonte/ssh-login-notifier/main/install.sh | sudo bash
@@ -40,12 +28,6 @@ sudo bash install.sh
 ```
 
 > **Note**: If Method 2 shows "No such file or directory", use Method 1 or 3.
-
-During installation, you'll configure:
-- Bot Token
-- Chat ID
-- Server Name (optional)
-- Failed Login Report Frequency (hourly/6h/12h/daily/disabled)
 
 ### License
 
