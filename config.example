@@ -1,0 +1,31 @@
+# Telegram Bot Configuration for SSH Login Notifier
+# Copy this file to /etc/ssh-login-notifier/config and fill in your details
+
+# Your Telegram Bot Token from @BotFather
+# To get a token:
+# 1. Open Telegram and search for @BotFather
+# 2. Send /newbot and follow the instructions
+# 3. Copy the token provided
+TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
+
+# Your Telegram Chat ID (can be user ID or group ID)
+# To get your Chat ID:
+# 1. Search for @userinfobot in Telegram
+# 2. Start a chat and it will display your Chat ID
+# Or:
+# 1. Send a message to your bot
+# 2. Visit: https://api.telegram.org/bot<YourBOTToken>/getUpdates
+# 3. Look for "chat":{"id":123456789}
+TELEGRAM_CHAT_ID="YOUR_CHAT_ID_HERE"
+
+# Custom server name (optional)
+# Set a friendly name for this server to display in notifications
+# Examples: "Production Server", "Dev VPS", "My Personal Server"
+# If not set or left empty, the system hostname will be used
+SERVER_NAME="My VPS Server"
+
+# Failed login report interval (optional)
+# Receive periodic reports about failed SSH login attempts
+# Options: hourly, 6hours, 12hours, daily, disabled
+# Default: disabled
+REPORT_INTERVAL="daily"

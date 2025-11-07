@@ -1,0 +1,26 @@
+# Configuration files with sensitive data
+config
+*.conf
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Log files
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+.temp/
