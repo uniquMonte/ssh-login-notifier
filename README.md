@@ -1,5 +1,3 @@
-# SSH Login Notifier
-
 ### Features
 
 - **Real-time Login Alerts**: Instant notifications for successful SSH logins
