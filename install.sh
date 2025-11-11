@@ -284,8 +284,8 @@ EOF
 
     # Update cron job if needed (only if user made a change)
     if [ "$UPDATE_CRON" = "1" ]; then
-        # Remove old cron job
-        crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | crontab -
+        # Remove old cron job and its comment
+        crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | grep -v "# SSH Failed Login Report" | crontab -
 
         if [ ! -z "$NEW_CRON_SCHEDULE" ]; then
             # Add new cron job
@@ -604,14 +604,12 @@ EOF
             # Set up cron job
             CRON_LINE="${CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
 
-            # Check if cron job already exists
-            if crontab -l 2>/dev/null | grep -q "report-failed-logins.sh"; then
-                echo -e "${YELLOW}!${NC} Cron job already exists"
-            else
-                # Add cron job
-                (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
-                echo -e "${GREEN}✓${NC} Cron job configured (${REPORT_INTERVAL})"
-            fi
+            # Remove any existing cron job and comments to avoid duplicates
+            crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | grep -v "# SSH Failed Login Report" | crontab - 2>/dev/null || true
+
+            # Add cron job
+            (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
+            echo -e "${GREEN}✓${NC} Cron job configured (${REPORT_INTERVAL})"
         else
             echo -e "${YELLOW}!${NC} Could not install report script"
         fi
