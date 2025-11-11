@@ -290,7 +290,7 @@ EOF
         if [ ! -z "$NEW_CRON_SCHEDULE" ]; then
             # Add new cron job
             CRON_LINE="${NEW_CRON_SCHEDULE} ${INSTALL_DIR}/${REPORT_SCRIPT_NAME}"
-            (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
+            (crontab -l 2>/dev/null; echo "$CRON_LINE") | crontab -
             echo ""
             echo -e "${GREEN}✓${NC} Cron job updated"
         else
@@ -608,7 +608,7 @@ EOF
             crontab -l 2>/dev/null | grep -v "report-failed-logins.sh" | grep -v "# SSH Failed Login Report" | crontab - 2>/dev/null || true
 
             # Add cron job
-            (crontab -l 2>/dev/null; echo "# SSH Failed Login Report"; echo "$CRON_LINE") | crontab -
+            (crontab -l 2>/dev/null; echo "$CRON_LINE") | crontab -
             echo -e "${GREEN}✓${NC} Cron job configured (${REPORT_INTERVAL})"
         else
             echo -e "${YELLOW}!${NC} Could not install report script"
