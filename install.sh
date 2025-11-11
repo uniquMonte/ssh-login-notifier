@@ -346,23 +346,18 @@ show_menu() {
         case $choice in
             1)
                 show_config
-                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             2)
                 reconfigure
-                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             3)
                 update_scripts
-                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             4)
                 test_notification
-                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             5)
                 run_report
-                read -p "Press Enter to continue..." < /dev/tty
                 ;;
             6)
                 echo ""
