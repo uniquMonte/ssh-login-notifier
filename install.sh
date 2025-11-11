@@ -207,7 +207,8 @@ reconfigure() {
     echo "Current Server Name: ${SERVER_NAME:-$(hostname)}"
     read -p "Enter new server name (or press Enter to keep current): " NEW_SERVER_NAME < /dev/tty
     if [ -z "$NEW_SERVER_NAME" ]; then
-        NEW_SERVER_NAME="$SERVER_NAME"
+        # If user didn't input, use current value or hostname if current is empty
+        NEW_SERVER_NAME="${SERVER_NAME:-$(hostname)}"
     fi
 
     echo ""
@@ -458,6 +459,11 @@ do_install() {
     echo "Leave empty to use system hostname: $(hostname)"
     echo ""
     read -p "Enter custom server name (or press Enter to skip): " SERVER_NAME < /dev/tty
+
+    # If empty, use system hostname as default
+    if [ -z "$SERVER_NAME" ]; then
+        SERVER_NAME="$(hostname)"
+    fi
 
     # Ask for failed login report configuration
     echo ""
