@@ -365,12 +365,16 @@ show_menu() {
                 read -p "Are you sure you want to uninstall? (y/N): " confirm < /dev/tty
                 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
                     if command -v curl &> /dev/null; then
-                        bash <(curl -fsSL "${GITHUB_RAW_URL}/uninstall.sh")
+                        curl -fsSL "${GITHUB_RAW_URL}/uninstall.sh" -o "${TEMP_DIR}/uninstall.sh"
+                        bash "${TEMP_DIR}/uninstall.sh" -y
+                    elif command -v wget &> /dev/null; then
+                        wget -q -O "${TEMP_DIR}/uninstall.sh" "${GITHUB_RAW_URL}/uninstall.sh"
+                        bash "${TEMP_DIR}/uninstall.sh" -y
                     else
                         echo -e "${RED}Please run uninstall manually${NC}"
                     fi
+                    exit 0
                 fi
-                exit 0
                 ;;
             0)
                 echo ""

@@ -31,10 +31,13 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-read -p "Are you sure you want to uninstall SSH Login Notifier? (y/N): " CONFIRM
-if [ "$CONFIRM" != "y" ] && [ "$CONFIRM" != "Y" ]; then
-    echo "Uninstallation cancelled."
-    exit 0
+# Check for -y flag to skip confirmation (used when called from install.sh menu)
+if [ "$1" != "-y" ]; then
+    read -p "Are you sure you want to uninstall SSH Login Notifier? (y/N): " CONFIRM < /dev/tty
+    if [ "$CONFIRM" != "y" ] && [ "$CONFIRM" != "Y" ]; then
+        echo "Uninstallation cancelled."
+        exit 0
+    fi
 fi
 
 echo ""
